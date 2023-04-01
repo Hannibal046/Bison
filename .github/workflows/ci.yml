@@ -1,0 +1,126 @@
+name: CI
+
+env:
+  PROJECT_NAME: pfhedge
+  PYTHON_VERSION: '3.9'
+
+on:
+  push:
+      branches:
+      - main
+      - develop
+      - release/*
+      - hotfix/*
+  pull_request:
+      branches:
+      - main
+      - develop
+      - release/*
+      - hotfix/*
+  workflow_dispatch:
+
+jobs:
+
+  test:
+
+    name: Test
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ['3.7', '3.8', '3.9']
+
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install
+      run: pip install poetry && poetry install
+
+    - name: Run doctest
+      run: make doctest
+      if: always()
+
+    - name: Run pytest
+      run: make test-cov
+      if: always()
+
+    - name: Upload codecov report
+      uses: codecov/codecov-action@v1
+      if: ${{ matrix.python-version == '3.9' }}
+
+  type:
+
+    name: Type
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - run: pip install poetry && poetry install
+
+    - run: make mypy
+
+  lint:
+
+    name: Lint
+
+    runs-on: ubuntu-latest
+
+    outputs:
+      status: ${{ job.status }}
+
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - run: pip install poetry && poetry install
+
+    - run: make lint
+
+  format:
+
+    name: Format
+
+    runs-on: ubuntu-latest
+
+    needs: lint
+
+    if: ${{ always() && needs.lint.outputs.status == 'failure' }}
+
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - run: pip install poetry && poetry install
+
+    - run: make format
+
+    - name: Create pull request
+      uses: peter-evans/create-pull-request@v3
+      with:
+        author: GitHub Actions <action@github.com>
+        base: ${{ github.event.pull_request.head.ref }}
+        commit-message: Automated Format
+        delete-branch: true
+        branch-suffix: short-commit-hash
+        title: Automated Format
