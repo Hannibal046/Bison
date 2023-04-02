@@ -188,12 +188,14 @@ class Hedger(Module):
         model: Module,
         inputs: List[Union[str, Feature]],
         criterion: HedgeLoss = EntropicRiskMeasure(),
+        sequence_prediction=False
     ) -> None:
         super().__init__()
 
         self.model = model
         self.inputs = FeatureList(inputs)
         self.criterion = criterion
+        self.sequence_prediction=sequence_prediction
 
         self.register_forward_hook(save_prev_output)
 
@@ -300,14 +302,25 @@ class Hedger(Module):
 
         (n_paths, n_steps), n_hedges = hedge[0].spot.size(), len(hedge)
         if inputs.is_state_dependent():
-            zeros = hedge[0].spot.new_zeros((n_paths, 1, n_hedges))
-            save_prev_output(self, input=None, output=zeros)
-            outputs = []
-            for time_step in range(n_steps - 1):
-                input = inputs.get(time_step)  # (N, T=1, F)
-                outputs.append(self(input))  # (N, T=1, H)
-            outputs.append(outputs[-1])
-            output = torch.cat(outputs, dim=-2)  # (N, T, H)
+            if not self.sequence_prediction:
+                zeros = hedge[0].spot.new_zeros((n_paths, 1, n_hedges))
+                save_prev_output(self, input=None, output=zeros)
+                outputs = []
+                for time_step in range(n_steps - 1):
+                    # print(self.get_buffer("prev_output"))
+                    input = inputs.get(time_step)  # (N, T=1, F)
+                    # assert torch.all(input[:,:,-1]==0) # ?
+                    outputs.append(self(input))  # (N, T=1, H)
+                outputs.append(outputs[-1])
+                output = torch.cat(outputs, dim=-2)  # (N, T, H)
+            else:
+                model_input = []
+                for time_step in range(n_steps):
+                    input = inputs.get(time_step) # (N, T=1, F)
+                    model_input.append(input)
+                model_input = torch.cat(model_input,dim=-2)  # (N, T, F)
+                output = self(model_input)
+
         else:
             # If all features are state-independent, compute the output at all
             # time steps at once, which would be faster.
