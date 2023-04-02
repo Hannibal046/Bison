@@ -1,6 +1,3 @@
-# Bison-Thesis
-这是Bison(Yihao Zhou)的硕士毕业论文代码库,研究的主题是`基于深度学习的量化分析`,该代码库由他的爹Hannibal046(Xin Cheng)搭建
-
 ## 环境依赖
 ```bash
 git clone git@github.com:Hannibal046/Bison-Thesis.git
