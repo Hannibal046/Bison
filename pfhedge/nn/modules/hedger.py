@@ -302,14 +302,12 @@ class Hedger(Module):
 
         (n_paths, n_steps), n_hedges = hedge[0].spot.size(), len(hedge)
         if inputs.is_state_dependent():
+            zeros = hedge[0].spot.new_zeros((n_paths, 1, n_hedges))
+            save_prev_output(self, input=None, output=zeros)
             if not self.sequence_prediction:
-                zeros = hedge[0].spot.new_zeros((n_paths, 1, n_hedges))
-                save_prev_output(self, input=None, output=zeros)
                 outputs = []
                 for time_step in range(n_steps - 1):
-                    # print(self.get_buffer("prev_output"))
                     input = inputs.get(time_step)  # (N, T=1, F)
-                    # assert torch.all(input[:,:,-1]==0) # ?
                     outputs.append(self(input))  # (N, T=1, H)
                 outputs.append(outputs[-1])
                 output = torch.cat(outputs, dim=-2)  # (N, T, H)

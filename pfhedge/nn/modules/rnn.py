@@ -30,7 +30,7 @@ class ElmanRNN(Module):
             activation='relu'
         elif isinstance(activation,Tanh):
             activation='tanh'
-
+            
         self.rnn = RNN(
             input_size = in_features,
             hidden_size = n_units,

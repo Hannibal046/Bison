@@ -1,3 +1,4 @@
+transformers
 poetry.lock
 docs/source/generated/
 examples/output/*

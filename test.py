@@ -5,7 +5,7 @@ import seaborn
 import torch
 from pfhedge.instruments import BrownianStock, EuropeanOption
 from pfhedge.nn import Hedger
-from pfhedge.nn import MultiLayerPerceptron,ElmanRNN
+from pfhedge.nn import MultiLayerPerceptron,ElmanRNN,Transformer
 
 
 seaborn.set_style("whitegrid")
@@ -45,14 +45,21 @@ def to_numpy(tensor: torch.Tensor) -> np.array:
 stock = BrownianStock(cost=1e-3)
 derivative = EuropeanOption(stock).to(DEVICE)
 
-# model = ElmanRNN(in_features=4)
-inputs=["log_moneyness", "expiry_time", "volatility", "prev_hedge"]
-model = MultiLayerPerceptron(in_features=len(inputs))
+inputs=["log_moneyness", "expiry_time", "volatility"]
+inputs.append("prev_hedge")
+
+# model = ElmanRNN(in_features=len(inputs))
+# model = MultiLayerPerceptron(in_features=len(inputs))
+model = Transformer(in_features=len(inputs))
 
 hedger = Hedger(
     model, 
     inputs=inputs,
-    # sequence_prediction=True,
+    sequence_prediction=True,
 ).to(DEVICE)
 
+print(model)
 history = hedger.fit(derivative, n_epochs=N_EPOCHS, n_paths=N_PATHS, n_times=20)
+
+pnl = hedger.compute_pnl(derivative, n_paths=N_PATHS)
+print('P&L mean: {}, std: {}'.format(round(np.nanmean(to_numpy(pnl)), 4), round(np.nanstd(to_numpy(pnl)), 4)))

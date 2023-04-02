@@ -13,6 +13,7 @@ from .modules.loss import HedgeLoss
 from .modules.loss import IsoelasticLoss
 from .modules.mlp import MultiLayerPerceptron
 from .modules.rnn import ElmanRNN
+from .modules.transformer import Transformer
 from .modules.naked import Naked
 from .modules.svi import SVIVariance
 from .modules.ww import WhalleyWilmott
