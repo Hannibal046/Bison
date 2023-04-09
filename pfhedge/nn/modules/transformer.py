@@ -37,7 +37,7 @@ class Transformer(Module):
             context_length=100,
             prediction_length=50,
             d_model = n_units,
-            encoder_layers=n_layers,
+            decoder_layers=n_layers,
             feature_size = in_features,
         )
 

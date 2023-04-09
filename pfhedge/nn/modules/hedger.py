@@ -422,6 +422,20 @@ class Hedger(Module):
         derivative.simulate(n_paths=n_paths, init_state=init_state)
         return self.compute_pl(derivative=derivative, hedge=hedge)
 
+    def compute_pnl_with_input(
+        self,
+        derivative,
+        hedge,
+        n_paths,
+        init_state,
+        input,
+    ):
+        for underlier in derivative.underliers():
+            underlier.register_buffer(
+                input,
+            )
+        return self.compute_pl(derivative=derivative, hedge=hedge)
+
     def compute_loss(
         self,
         derivative: BaseDerivative,
