@@ -11,8 +11,10 @@ pip install transformers
 ## ToDo
 Hannibal046:
 - [x] 修改`Hedger`的数据格式
-- [x] 增加`RNN`模型
-- [x] 增加`Transformer`模型
+ - 在`Hedger`初始化的时候加入了一个flag,`sequence_prediction`
+ - https://github.com/Hannibal046/Bison/blob/2884b9e4985a4007b3d9ed26ad49ae83ee48bb8a/pfhedge/nn/modules/hedger.py#L307-L320
+- [x] 增加`RNN`模型: https://github.com/Hannibal046/Bison/blob/main/pfhedge/nn/modules/rnn.py
+- [x] 增加`Transformer`模型: https://github.com/Hannibal046/Bison/blob/main/pfhedge/nn/modules/transformer.py
 - [ ] 在`MLP`模型中加入多个历史信息
 
 Bison:
